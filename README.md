@@ -74,28 +74,47 @@ Open **`http://localhost:3000`** in your browser to view the application.
 
 ---
 
-## ☁️ Deployment Guide (Render.com)
+## ☁️ Cloud Deployment Guides
 
-To publish GuardianAI live on the web, follow these steps to host on **Render**:
+To publish GuardianAI live on the web, configure your **MongoDB Atlas** database first, then choose either Vercel or Render for hosting.
+
+### Prerequisites (Database Setup)
+1. **Set up MongoDB Atlas**:
+   * Create a free cluster on MongoDB Atlas.
+   * Add database access user credentials (make sure to note your username and password).
+   * Add network whitelist access to allow connection from anywhere (`0.0.0.0/0`) so cloud servers can connect.
+   * Copy your cloud connection URL.
+
+---
+
+### Option A: Deployment using Vercel (Recommended for Frontend & Serverless)
+
+We have already configured `vercel.json` and a serverless entry point in `api/index.ts` to support Vercel out-of-the-box:
 
 1. **Push your code to GitHub**: Create a repository and push your project files.
-2. **Set up MongoDB Atlas**:
-   * Create a free cluster on MongoDB Atlas.
-   * Add database access user credentials.
-   * Add network whitelist access to allow connection from anywhere (`0.0.0.0/0`).
-   * Copy your cloud connection URL.
-3. **Deploy on Render**:
-   * Log into **Render.com** and click **New +** > **Web Service**.
-   * Link your GitHub repository.
-   * Configure the service options:
-     * **Runtime**: `Node`
-     * **Build Command**: `npm install && npm run build`
-     * **Start Command**: `npm start`
-     * **Instance Plan**: `Free`
-   * Click **Advanced** > **Add Environment Variable**:
-     * `GEMINI_API_KEY` = `your_gemini_api_key`
-     * `MONGODB_URI` = `your_mongodb_atlas_connection_string`
-     * `NODE_ENV` = `production`
-   * Click **Deploy Web Service**.
+2. **Log into Vercel**: Sign in to **[Vercel](https://vercel.com/)** and click **Add New** > **Project**.
+3. **Import repository**: Link your GitHub account and import your `guardianai-scam-shield` repository.
+4. **Configure Settings**:
+   * **Framework Preset**: Leave as `Other` or `Vite` (Vercel automatically detects the configurations).
+   * **Build and Output Settings**: Default build script `npm run build` is automatically used.
+5. **Environment Variables**: Expand the Environment Variables section and add:
+   * `GEMINI_API_KEY`: *(Your Google Gemini API Key)*
+   * `MONGODB_URI`: `mongodb+srv://riyaladwa9_db_user:YLbiVHnGELayPooV@cluster0.km1wdzc.mongodb.net/scamshield?appName=Cluster0`
+6. **Deploy**: Click **Deploy**. Vercel will bundle the static frontend assets and create serverless endpoints for all Express routes!
 
-Once the build finishes, Render will provide you with a public HTTPS link (e.g. `https://your-app.onrender.com`).
+---
+
+### Option B: Deployment using Render.com (Alternative)
+
+1. Log into **Render.com** and click **New +** > **Web Service**.
+2. Link your GitHub repository.
+3. Configure the service options:
+   * **Runtime**: `Node`
+   * **Build Command**: `npm install && npm run build`
+   * **Start Command**: `npm start`
+   * **Instance Plan**: `Free`
+4. Click **Advanced** > **Add Environment Variable**:
+   * `GEMINI_API_KEY` = `your_gemini_api_key`
+   * `MONGODB_URI` = `your_mongodb_atlas_connection_string`
+   * `NODE_ENV` = `production`
+5. Click **Deploy Web Service**.

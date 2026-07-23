@@ -938,4 +938,10 @@ async function startServer() {
   });
 }
 
-startServer();
+if (process.env.VERCEL) {
+  connectToMongo();
+} else {
+  startServer();
+}
+
+export default app;
