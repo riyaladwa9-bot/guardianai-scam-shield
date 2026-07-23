@@ -57,15 +57,19 @@ const MONGODB_URI = process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/scamsh
 const mongoClient = new MongoClient(MONGODB_URI);
 let db: any = null;
 
-async function connectToMongo() {
-  try {
-    await mongoClient.connect();
-    db = mongoClient.db();
-    console.log("Connected successfully to MongoDB database");
-    await seedMongoDb();
-  } catch (err) {
-    console.error("MongoDB connection failed, running in un-persisted memory mode:", err);
+async function getDb() {
+  if (!db) {
+    try {
+      await mongoClient.connect();
+      db = mongoClient.db();
+      console.log("Connected successfully to MongoDB database");
+      await seedMongoDb();
+    } catch (err) {
+      console.error("MongoDB connection failed:", err);
+      throw err;
+    }
   }
+  return db;
 }
 
 async function seedMongoDb() {
@@ -568,12 +572,11 @@ async function saveScanToDatabase(scanType: string, textContent: string | null, 
     detailedSummary: resultJson.detailedSummary
   };
   
-  if (db) {
-    try {
-      await db.collection("scans").insertOne(newScan);
-    } catch (err) {
-      console.error("Failed to insert scan into MongoDB:", err);
-    }
+  try {
+    const database = await getDb();
+    await database.collection("scans").insertOne(newScan);
+  } catch (err) {
+    console.error("Failed to insert scan into MongoDB:", err);
   }
   return newScan;
 }
@@ -581,10 +584,8 @@ async function saveScanToDatabase(scanType: string, textContent: string | null, 
 // GET list of scans
 app.get("/api/scans", async (req, res) => {
   try {
-    if (!db) {
-      return res.status(500).json({ success: false, error: "Database not connected" });
-    }
-    const scans = await db.collection("scans").find().sort({ _id: -1 }).toArray();
+    const database = await getDb();
+    const scans = await database.collection("scans").find().sort({ _id: -1 }).toArray();
     res.json({ success: true, scans });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
@@ -594,9 +595,7 @@ app.get("/api/scans", async (req, res) => {
 // POST to save a manual/custom scan
 app.post("/api/scans", async (req, res) => {
   try {
-    if (!db) {
-      return res.status(500).json({ success: false, error: "Database not connected" });
-    }
+    const database = await getDb();
     const newScan = req.body;
     if (!newScan.id) {
       newScan.id = "scan-" + Date.now();
@@ -604,7 +603,7 @@ app.post("/api/scans", async (req, res) => {
     if (!newScan.timestamp) {
       newScan.timestamp = "Just now";
     }
-    await db.collection("scans").insertOne(newScan);
+    await database.collection("scans").insertOne(newScan);
     res.json({ success: true, scan: newScan });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
@@ -614,10 +613,8 @@ app.post("/api/scans", async (req, res) => {
 // GET heatmaps
 app.get("/api/heatmap", async (req, res) => {
   try {
-    if (!db) {
-      return res.status(500).json({ success: false, error: "Database not connected" });
-    }
-    const heatmap = await db.collection("heatmap").find().toArray();
+    const database = await getDb();
+    const heatmap = await database.collection("heatmap").find().toArray();
     res.json({ success: true, heatmap });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
@@ -627,10 +624,8 @@ app.get("/api/heatmap", async (req, res) => {
 // GET news advisories
 app.get("/api/news", async (req, res) => {
   try {
-    if (!db) {
-      return res.status(500).json({ success: false, error: "Database not connected" });
-    }
-    const news = await db.collection("news").find().toArray();
+    const database = await getDb();
+    const news = await database.collection("news").find().toArray();
     res.json({ success: true, news });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
@@ -640,10 +635,8 @@ app.get("/api/news", async (req, res) => {
 // GET family members
 app.get("/api/family", async (req, res) => {
   try {
-    if (!db) {
-      return res.status(500).json({ success: false, error: "Database not connected" });
-    }
-    const family = await db.collection("family").find().toArray();
+    const database = await getDb();
+    const family = await database.collection("family").find().toArray();
     res.json({ success: true, family });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
@@ -653,10 +646,8 @@ app.get("/api/family", async (req, res) => {
 // GET badges
 app.get("/api/badges", async (req, res) => {
   try {
-    if (!db) {
-      return res.status(500).json({ success: false, error: "Database not connected" });
-    }
-    const badges = await db.collection("badges").find().toArray();
+    const database = await getDb();
+    const badges = await database.collection("badges").find().toArray();
     res.json({ success: true, badges });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
@@ -666,10 +657,8 @@ app.get("/api/badges", async (req, res) => {
 // GET knowledge base articles
 app.get("/api/articles", async (req, res) => {
   try {
-    if (!db) {
-      return res.status(500).json({ success: false, error: "Database not connected" });
-    }
-    const articles = await db.collection("articles").find().toArray();
+    const database = await getDb();
+    const articles = await database.collection("articles").find().toArray();
     res.json({ success: true, articles });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
@@ -918,7 +907,7 @@ function generateMockAnalysis(scanType: string, textContent: string) {
 
 // Vite / Production Middlewares
 async function startServer() {
-  await connectToMongo();
+  await getDb();
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
@@ -939,7 +928,7 @@ async function startServer() {
 }
 
 if (process.env.VERCEL) {
-  connectToMongo();
+  getDb();
 } else {
   startServer();
 }
