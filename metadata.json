@@ -1,0 +1,11 @@
+{
+  "name": "GuardianAI",
+  "description": "India's Multimodal AI Scam Detection Platform - Deepfake, voice clone, email, SMS, URL, and QR code security with explainable AI risk scoring.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
