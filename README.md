@@ -1,5 +1,7 @@
 # GuardianAI: Multimodal Scam Shield & Cyber Forensics
 
+👉 **Live Demo**: [https://guardianai-scam-shield.vercel.app/](https://guardianai-scam-shield.vercel.app/)
+
 GuardianAI is a state-of-the-art, full-stack cybersecurity application designed to combat the rising wave of digital scams in India (such as Digital Arrest fraud, electricity bill smishing, part-time job Telegram traps, fake UPI collect requests, AI voice clones, and deepfakes).
 
 Powered by Google's **Gemini Multimodal AI**, GuardianAI scans files, text, links, and media in real-time, providing Indian users with instant threat scores, legal context, and actionable safety advisories.
