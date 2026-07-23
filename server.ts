@@ -927,9 +927,7 @@ async function startServer() {
   });
 }
 
-if (process.env.VERCEL) {
-  getDb();
-} else {
+if (!process.env.VERCEL) {
   startServer();
 }
 
